@@ -1,0 +1,27 @@
+#!/bin/bash
+
+current_tty="7"
+if [ -e "/dev/tty" ]; then
+	echo -n
+else
+	echo "Warning! Main tty does not exist, exiting..."
+	exit 1
+fi
+if [ $USER != "root" ]; then
+	echo "Warning! To add a tty user must be root!"
+	exit 1
+fi
+if [ -z "$1" ]; then
+	echo "Warning! You must specify a tty! (Ex. tty5)"
+	exit 1
+fi
+if [ -z "$2" ]; then
+	clear 2>/dev/${1} 1>/dev/${1} </dev/${1}
+        chvt $(echo $1 | cut -c4-)
+	bash 2>/dev/${1} 1>/dev/${1} 0>/dev/${1} </dev/${1} && chvt ${current_tty}
+else
+	clear 2>/dev/${1} 1>/dev/${1} </dev/${1}
+	chvt $(echo $1 | cut -c4-)
+	cat $(tty) >/dev/${1} &
+	$2 2>/dev/${1} 1>/dev/${1} 0>/dev/${1} </dev/${1} && chvt ${current_tty}
+fi
