@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# termtty - Executes a command in a tty.
+# Usage: termtty ttyN [command]
+
+
+if [ $USER != "root" ]; then
+	echo "Warning! To add a tty user must be root!"
+	exit 1
+fi
+if [ -z "$1" ]; then
+	echo "Warning! You must specify a tty! (Ex. tty5)"
+	exit 1
+fi
+if [ -z "$2" ]; then
+	clear 2>/dev/${1} 1>/dev/${1} </dev/${1}
+	bash 2>/dev/${1} 1>/dev/${1} 0>/dev/${1} </dev/${1} &
+	echo "Running in ${1}! Remember to exit!"
+else
+	clear 2>/dev/${1} 1>/dev/${1} </dev/${1}
+	cat $(tty) >/dev/${1} &
+	$2 2>/dev/${1} 1>/dev/${1} 0>/dev/${1} </dev/${1} &
+	echo "Running in ${1}! Remember to exit!"
+fi

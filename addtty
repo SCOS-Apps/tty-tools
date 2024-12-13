@@ -1,27 +1,20 @@
-#!/bin/bash
+#!/bin/sh
 
-current_tty="7"
-if [ -e "/dev/tty" ]; then
-	echo -n
-else
-	echo "Warning! Main tty does not exist, exiting..."
-	exit 1
-fi
+# addtty - Invokes socat to add a tty.
+# Usage: addtty [kill] [N]
+
 if [ $USER != "root" ]; then
-	echo "Warning! To add a tty user must be root!"
-	exit 1
+        echo "Warning! To add a tty user must be root!"
+        exit 1
 fi
 if [ -z "$1" ]; then
-	echo "Warning! You must specify a tty! (Ex. tty5)"
-	exit 1
-fi
-if [ -z "$2" ]; then
-	clear 2>/dev/${1} 1>/dev/${1} </dev/${1}
-        chvt $(echo $1 | cut -c4-)
-	bash 2>/dev/${1} 1>/dev/${1} 0>/dev/${1} </dev/${1} && chvt ${current_tty}
+	echo "No tty specified, using default (tty1)..."
+	socat -d -d pty,rawer,echo=0,link=/dev/tty1 pty,rawer,echo=0,link=/dev/tty1 2>/dev/null || echo "Warning! Socat error! (Has it exited?)"; exit 1
 else
-	clear 2>/dev/${1} 1>/dev/${1} </dev/${1}
-	chvt $(echo $1 | cut -c4-)
-	cat $(tty) >/dev/${1} &
-	$2 2>/dev/${1} 1>/dev/${1} 0>/dev/${1} </dev/${1} && chvt ${current_tty}
+	if [ "$1" = "kill" ]; then
+		kill $(ps | grep -Fw "socat" | cut -d" " -f1) 2>/dev/null
+		kill $(ps | grep -Fw "socat" | cut -d" " -f2) 2>/dev/null
+		exit
+	fi
+	socat -d -d pty,rawer,echo=0,link=/dev/tty${1} pty,rawer,echo=0,link=/dev/tty${1} 2>/dev/null || echo "Warning! Socat error! (Has it exited?)"; exit 1
 fi
